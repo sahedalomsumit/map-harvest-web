@@ -1,6 +1,8 @@
 # 🗺️ Map Harvest Web
 
 <div align="center">
+  <img src="img/Marquee promo tile - map harvest.png" alt="Map Harvest Feature Promo" width="100%">
+  <br><br>
   <img src="img/map-harvest-icon.png" alt="Map Harvest Icon" width="200">
   <br>
   <h1>Map Harvest Extension</h1>
