@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Map Harvest – Scrape Google Maps to CSV</title>
+    <meta
+      name="description"
+      content="Map Harvest is a lightweight, fully client-side Chrome Extension that scrapes Google Maps search results and exports the data directly into a cleanly formatted CSV file."
+    />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Scripts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="bg-[#050505] text-white selection:bg-violet-500/30">
+    <div id="cursor" class="hidden md:block"></div>
+    <div class="aura" id="aura-1" style="top: -10%; left: -10%"></div>
+    <div class="aura" id="aura-2" style="bottom: -10%; right: -10%"></div>
+
+    <!-- Top Bar -->
+    <div
+      class="w-full bg-[#080808] py-3 px-4 flex flex-col md:flex-row justify-center items-center tech-label border-b border-white/5 z-[60] relative"
+    >
+      <div class="flex items-center gap-3 text-emerald-500">
+        <div class="pulse-dot"></div>
+        <span class="text-white">SYSTEM_STATUS:</span>
+        OPEN FOR COLLABORATIONS
+      </div>
+      <span class="text-white/10 mx-6 hidden md:block">|</span>
+      <div class="flex gap-6 mt-2 md:mt-0">
+        <a
+          href="https://wa.me/+358415765539"
+          class="text-gray-400 hover:text-white transition-colors"
+          target="_blank"
+          rel="noopener noreferrer"
+          >MESSAGE_WHATSAPP »</a
+        >
+      </div>
+    </div>
+
+    <!-- Header -->
+    <header
+      id="main-header"
+      class="sticky top-0 w-full z-[70] sticky-header transition-all py-6"
+    >
+      <div class="px-6 max-w-7xl mx-auto flex items-center justify-between">
+        <a
+          href="index.html"
+          class="flex items-center group cursor-pointer z-[60]"
+        >
+          <img
+            class="sas-logo transition-transform group-hover:scale-105 w-32"
+            src="img/logo-sahed-alom-sumit.png"
+            alt="Sahed Alom Sumit Official Logo"
+          />
+          <div class="hidden md:block h-6 w-[1px] bg-white/10 mx-6"></div>
+          <div
+            class="hidden lg:block font-mono text-[9px] text-gray-500 uppercase tracking-tighter leading-tight"
+          >
+            Designer & Developer<br />
+            <span class="text-emerald-500 italic">Availability: High</span>
+          </div>
+        </a>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex items-center gap-10">
+          <a
+            href="index.html"
+            class="tech-label font-bold text-violet-400 border-b border-violet-500 pb-1 transition-all"
+            >./HOME</a
+          >
+          <a
+            href="privacy-policy.html"
+            class="tech-label font-bold text-white hover:text-violet-400 border-b border-transparent hover:border-violet-500/50 pb-1 transition-all"
+            >./PRIVACY_POLICY</a
+          >
+          <a
+            href="data-deletion.html"
+            class="tech-label font-bold text-white hover:text-violet-400 border-b border-transparent hover:border-violet-500/50 pb-1 transition-all"
+            >./DATA_DELETION</a
+          >
+        </nav>
+
+        <!-- Mobile Hamburger Button -->
+        <button
+          id="menu-btn"
+          class="md:hidden z-[80] relative w-10 h-10 flex items-center justify-center focus:outline-none"
+          aria-label="Toggle Menu"
+        >
+          <div class="w-6 flex flex-col items-end gap-1.5">
+            <span
+              class="block h-0.5 bg-white transition-all duration-300 w-6"
+            ></span>
+            <span
+              class="block h-0.5 bg-white transition-all duration-300 w-4"
+            ></span>
+            <span
+              class="block h-0.5 bg-white transition-all duration-300 w-5"
+            ></span>
+          </div>
+        </button>
+      </div>
+    </header>
+
+    <!-- Fullscreen Mobile Overlay -->
+    <div
+      id="mobile-menu"
+      class="fixed inset-0 bg-[#050505] z-[55] flex flex-col items-center justify-center md:hidden"
+      style="display: none; opacity: 0; transform: translateX(100%);"
+    >
+      <div class="flex flex-col items-center gap-12">
+        <a href="index.html" class="group flex items-baseline gap-4">
+          <span class="font-mono text-violet-500 text-xs">01_</span>
+          <span
+            class="text-4xl font-black tracking-tighter uppercase transition-colors text-white"
+            >HOME</span
+          >
+        </a>
+        <a href="privacy-policy.html" class="group flex items-baseline gap-4">
+          <span class="font-mono text-violet-500 text-xs">02_</span>
+          <span
+            class="text-4xl font-black tracking-tighter uppercase transition-colors text-white/40 group-hover:text-white"
+            >PRIVACY_POLICY</span
+          >
+        </a>
+        <a href="data-deletion.html" class="group flex items-baseline gap-4">
+          <span class="font-mono text-violet-500 text-xs">03_</span>
+          <span
+            class="text-4xl font-black tracking-tighter uppercase transition-colors text-white/40 group-hover:text-white"
+            >DATA_DELETION</span
+          >
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main>
+      <!-- Hero Section -->
+      <section class="pt-40 pb-32 px-6 max-w-7xl mx-auto min-h-screen">
+        <div
+          class="reveal mb-24 text-center flex flex-col items-center justify-center"
+        >
+          <div class="flex justify-center mb-10">
+            <div class="relative group">
+              <div class="absolute -inset-1 bg-emerald-500/20 rounded-[2rem] blur-xl group-hover:bg-emerald-500/30 transition duration-1000 group-hover:duration-200"></div>
+              <img
+                src="img/map-harvest-icon.png"
+                alt="Map Harvest Icon"
+                class="relative w-24 h-24 md:w-32 md:h-32 rounded-[2rem] shadow-2xl"
+              />
+            </div>
+          </div>
+
+          <h1
+            class="text-6xl md:text-7xl heading-bold text-white leading-[0.9] mb-8"
+          >
+            Map Harvest <span class="text-emerald-500">Extension</span>
+          </h1>
+          <p class="max-w-3xl text-gray-400 text-xl font-light leading-relaxed mb-12">
+            A lightweight, fully client-side Chrome Extension that scrapes Google Maps search results and exports the data directly into a cleanly formatted CSV file. No backend, no API keys, and no rate limits.
+            <span class="skill-tag text-emerald-500 border-emerald-500/20 bg-emerald-500/5 mx-2 mt-4 inline-block">100%_CLIENT_SIDE</span>
+          </p>
+
+          <div class="flex flex-wrap justify-center gap-6">
+            <a
+              href="https://github.com/sahedalomsumit/map-harvest"
+              target="_blank"
+              rel="noreferrer"
+              class="cta-primary cta-large"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+              </svg>
+              View on GitHub
+            </a>
+          </div>
+        </div>
+
+        <!-- Key Features Grid -->
+        <div class="reveal mb-40">
+          <div class="text-center mb-20">
+            <div class="tech-label text-violet-400 mb-6">/ SYSTEM_CAPABILITIES</div>
+            <h2 class="text-4xl md:text-6xl heading-bold text-white">
+              Key Features
+            </h2>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bento-card p-10 hover:border-emerald-500/30">
+              <h3 class="text-2xl font-black text-emerald-500 mb-6 flex items-center gap-4">
+                <span class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-sm">01</span>
+                Automated Scraping
+              </h3>
+              <p class="text-gray-400 font-light text-lg">
+                Automatically scrolls through Google Maps search results, clicks each listing, and extracts the data. Captures business name, phone number, website, total reviews, and review score.
+              </p>
+            </div>
+
+            <div class="bento-card p-10 hover:border-violet-500/30">
+              <h3 class="text-2xl font-black text-violet-400 mb-6 flex items-center gap-4">
+                <span class="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center text-sm">02</span>
+                Deep Scraping
+              </h3>
+              <p class="text-gray-400 font-light text-lg">
+                Fetches the business's website in the background to extract email addresses and social media links (Facebook, Instagram, LinkedIn) while avoiding CORS issues.
+              </p>
+            </div>
+
+            <div class="bento-card p-10 hover:border-emerald-500/30">
+              <h3 class="text-2xl font-black text-white mb-6 flex items-center gap-4 uppercase tracking-tight">
+                <span class="text-emerald-500">📊</span> Excel-Friendly CSV
+              </h3>
+              <p class="text-gray-400 text-lg font-light leading-relaxed">
+                Phone numbers are automatically prepended with their country code and formatted so that Excel reads them as text, preventing them from being converted into scientific notation.
+              </p>
+            </div>
+
+            <div class="bento-card p-10 hover:border-violet-500/30">
+              <h3 class="text-2xl font-black text-white mb-6 flex items-center gap-4 uppercase tracking-tight">
+                <span class="text-violet-400">🔒</span> 100% Client-Side
+              </h3>
+              <p class="text-gray-400 text-lg font-light leading-relaxed">
+                All scraping and CSV generation happens directly in your browser. No data is sent to external servers, and no API keys are required.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- How to Use -->
+        <div class="reveal mb-40 text-center">
+          <div class="tech-label text-violet-400 mb-6">/ GETTING_STARTED</div>
+          <h2 class="text-4xl md:text-6xl heading-bold text-white mb-16">
+            How to Use
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bento-card p-10 text-left">
+              <div class="skill-tag inline-block border-violet-500/20 text-violet-400 bg-violet-500/5 mb-8">
+                STEP_01
+              </div>
+              <h3 class="text-2xl font-black text-white mb-4 uppercase tracking-tight">Install Extension</h3>
+              <p class="text-gray-400 leading-relaxed font-light">
+                Clone the repository, enable Developer mode in Chrome extensions, and load the unpacked folder.
+              </p>
+            </div>
+            <div class="bento-card p-10 text-left">
+              <div class="skill-tag inline-block border-emerald-500/20 text-emerald-500 bg-emerald-500/5 mb-8">
+                STEP_02
+              </div>
+              <h3 class="text-2xl font-black text-white mb-4 uppercase tracking-tight">Search Maps</h3>
+              <p class="text-gray-400 leading-relaxed font-light">
+                Go to Google Maps and search for any query (e.g., "dentists in Helsinki", "spas in Dublin").
+              </p>
+            </div>
+            <div class="bento-card p-10 text-left">
+              <div class="skill-tag inline-block border-violet-500/20 text-violet-400 bg-violet-500/5 mb-8">
+                STEP_03
+              </div>
+              <h3 class="text-2xl font-black text-white mb-4 uppercase tracking-tight">Start Scraping</h3>
+              <p class="text-gray-400 leading-relaxed font-light">
+                Click the extension icon, hit "Start Scraping", and watch the data pour in. Export to CSV when done!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Support Our Mission -->
+        <div
+          class="reveal bento-card p-12 md:p-20 mb-40 relative overflow-hidden"
+        >
+          <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 blur-[100px] rounded-full"></div>
+          <div class="absolute bottom-0 left-0 w-64 h-64 bg-violet-500/5 blur-[100px] rounded-full"></div>
+          
+          <div class="text-center mb-16 relative z-10">
+            <div class="tech-label text-emerald-500 mb-6">/ COMMUNITY_SUPPORT</div>
+            <h2 class="text-4xl md:text-6xl heading-bold text-white mb-6">
+              Support Our Mission
+            </h2>
+            <p class="text-gray-400 text-xl font-light leading-relaxed max-w-2xl mx-auto">
+              If you benefit from this free open-source tool, you may give Sadaqah to
+              support it for maintenance and future development.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+            <!-- Stripe -->
+            <div class="bento-card p-10 flex flex-col items-center text-center group hover:border-[#635BFF]/30 transition-all">
+              <div class="w-16 h-16 bg-[#635BFF]/10 rounded-2xl flex items-center justify-center mb-8 text-[#635BFF]">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+              </div>
+              <h3 class="text-2xl font-black text-white mb-4 uppercase tracking-tight">International</h3>
+              <p class="text-gray-400 font-light mb-10 text-lg">Fast and secure international donations via Stripe.</p>
+              <a href="https://buy.stripe.com/3cI4gy7g04XL9NcfL98AE02" target="_blank" rel="noreferrer" class="cta-primary w-full justify-center !bg-[#635BFF] !text-white hover:!bg-[#524BFF]">
+                Donate via Stripe
+              </a>
+            </div>
+
+            <!-- bKash -->
+            <div class="bento-card p-10 flex flex-col items-center text-center group hover:border-[#E2136E]/30 transition-all">
+              <div class="w-16 h-16 bg-[#E2136E]/10 rounded-2xl flex items-center justify-center mb-8 text-[#E2136E]">
+                <span class="font-bold text-3xl">b</span>
+              </div>
+              <h3 class="text-2xl font-black text-white mb-4 uppercase tracking-tight">Bangladesh</h3>
+              <p class="text-gray-400 font-light mb-8 text-lg">Send Sadaqah via bKash Send Money to:</p>
+              <div class="w-full bg-white/5 border border-[#E2136E]/20 rounded-2xl p-6 flex flex-col items-center justify-center mb-10">
+                <span class="text-3xl font-black text-[#E2136E] tracking-[0.2em] mb-2">01773615582</span>
+                <span class="tech-label !text-[9px]">Personal Account</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Legal Links -->
+        <div class="reveal bento-card p-10 flex flex-col md:flex-row items-center justify-center gap-10">
+          <a href="privacy-policy.html" class="tech-label hover:text-emerald-500 transition-colors group flex items-center gap-3">
+            <span>Privacy_Policy</span>
+            <span class="group-hover:translate-x-1 transition-transform">→</span>
+          </a>
+          <div class="hidden md:block w-[1px] h-4 bg-white/10"></div>
+          <a href="data-deletion.html" class="tech-label hover:text-red-500 transition-colors group flex items-center gap-3">
+            <span>Data_Deletion_Request</span>
+            <span class="group-hover:translate-x-1 transition-transform">→</span>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-white/5 bg-[#050505] relative overflow-hidden">
+      <div class="max-w-7xl mx-auto px-6">
+        <p class="font-mono text-[9px] uppercase tracking-widest text-center flex flex-wrap items-center justify-center gap-x-2 gap-y-1" style="color: var(--text-muted);"><span>© 2026 Sahed Alom Sumit //</span><a href="https://sahedalomsumit.com" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 hover:opacity-80 transition-opacity" style="text-decoration: none;"><span class="normal-case tracking-normal">Built with</span><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform-origin: center center; flex-shrink: 0; animation: 1.2s ease-in-out 0s infinite normal none running pulseHeart;"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path></svg><span class="normal-case tracking-normal">by</span><span class="normal-case tracking-normal" style="color: rgb(255, 135, 25); font-weight: 700;">Sahed</span></a></p>
+
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>
